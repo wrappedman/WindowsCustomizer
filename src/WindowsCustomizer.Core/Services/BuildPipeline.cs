@@ -101,12 +101,10 @@ public sealed class BuildPipeline
         var scriptDir = Path.Combine(ws, "Scripts");
 
         var steps = new List<(string Name, Func<CancellationToken, Task<string>> Run)>();
-        var total = 0;
-
+                // In-step progress is log-only — the runner loop reports step start/finish to the UI
+        // (sending a second progress event here would duplicate the live step rows).
         void Report(string step, string detail = "")
         {
-            total++;
-            progress?.Report(new BuildProgress { Step = step, Percent = 0, Detail = detail });
             _log.Info("Build", $"STEP: {step} {detail}".Trim());
         }
 
@@ -199,10 +197,20 @@ public sealed class BuildPipeline
         {
             Report("Mount Image");
             var index = state.SelectedImageIndexes.FirstOrDefault() <= 0 ? 1 : state.SelectedImageIndexes[0];
+
+            // Leftovers from a crashed run make DISM fail ("the directory is not empty").
+            if (Directory.Exists(mountDir) && Directory.EnumerateFileSystemEntries(mountDir).Any())
+            {
+                report.Warnings.Add("Mount directory was not empty (leftover of a previous run) — cleaned before mounting.");
+                Directory.Delete(mountDir, recursive: true);
+            }
+
             var result = await _dism.MountImageAsync(workingWim, index, mountDir, readOnly: false, ct2).ConfigureAwait(false);
             if (!result.Success)
             {
-                throw new InvalidOperationException($"Mount failed (exit {result.ExitCode}). {result.StdErr}".Trim());
+                // DISM often writes the real error to STDOUT — surface it so the report is actionable.
+                var detail = string.IsNullOrWhiteSpace(result.StdErr) ? result.StdOut : result.StdErr;
+                throw new InvalidOperationException($"Mount failed (exit {result.ExitCode}). {detail}".Trim());
             }
 
             return $"Mounted index {index} at {mountDir}";
@@ -710,7 +718,7 @@ public sealed class BuildPipeline
         var sb = new StringBuilder();
         sb.AppendLine($"# Build Report — {report.ProjectName}");
         sb.AppendLine();
-        sb.AppendLine($"- **Result:** {(report.Success ? "✅ SUCCESS" : "❌ FAILED")}");
+        sb.AppendLine($"- **Result:** {(report.Success ? "√ SUCCESS" : "✕ FAILED")}");
         sb.AppendLine($"- **Started:** {report.StartedUtc:yyyy-MM-dd HH:mm:ss} UTC");
         sb.AppendLine($"- **Finished:** {report.FinishedUtc:yyyy-MM-dd HH:mm:ss} UTC");
         sb.AppendLine($"- **Duration:** {(report.FinishedUtc - report.StartedUtc).TotalMinutes:0.0} minutes");
@@ -728,7 +736,7 @@ public sealed class BuildPipeline
         var i = 1;
         foreach (var s in report.Steps)
         {
-            sb.AppendLine($"| {i++} | {s.Name} | {(s.Success ? "✅" : "❌")} | {s.Duration.TotalSeconds:0}s | {s.Detail.Replace("|", "/")} |");
+            sb.AppendLine($"| {i++} | {s.Name} | {(s.Success ? "√" : "✕")} | {s.Duration.TotalSeconds:0}s | {s.Detail.Replace("|", "/")} |");
         }
 
         if (report.Warnings.Count > 0)
@@ -747,7 +755,7 @@ public sealed class BuildPipeline
             sb.AppendLine("## Errors");
             foreach (var e in report.Errors)
             {
-                sb.AppendLine($"- ❌ {e}");
+                sb.AppendLine($"- ✕ {e}");
             }
         }
 

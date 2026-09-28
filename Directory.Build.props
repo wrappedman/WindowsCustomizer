@@ -8,8 +8,8 @@
     <Product>Windows Customizer Studio</Product>
     <Authors>WindowsCustomizer</Authors>
     <Version>1.0.0</Version>
-    <FileVersion>0.1.0</FileVersion>
-    <AssemblyVersion>0.1.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
     <!-- Allows building Windows-targeted (WPF) projects from non-Windows CI machines. -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>

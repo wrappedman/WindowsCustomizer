@@ -55,10 +55,20 @@ public sealed class DismEngine
 
     public Task<CommandResult> MountImageAsync(string wimPath, int index, string mountDir, bool readOnly = false, CancellationToken ct = default)
     {
+        // DISM requires the mount directory to exist and be EMPTY, and paths must not end
+        // with a separator (a trailing backslash corrupts the command line → error 87).
+        mountDir = mountDir.TrimEnd('\\', '/');
+        wimPath = wimPath.TrimEnd('\\', '/');
         Directory.CreateDirectory(mountDir);
+        if (Directory.EnumerateFileSystemEntries(mountDir).Any())
+        {
+            throw new InvalidOperationException($"The DISM mount directory is not empty: {mountDir}. Clean it or choose an empty folder.");
+        }
+
         var args = new List<string>
         {
-            "/English", "/Mount-Image", $"/WimFile:{wimPath}", $"/Index:{index}", $"/MountDir:{mountDir}"
+            // /ImageFile is the correct parameter for /Mount-Image (/WimFile is only for /Get-WimInfo).
+            "/English", "/Mount-Image", $"/ImageFile:{wimPath}", $"/Index:{index}", $"/MountDir:{mountDir}"
         };
         if (readOnly)
         {
@@ -70,6 +80,7 @@ public sealed class DismEngine
 
     public Task<CommandResult> UnmountImageAsync(string mountDir, bool commit, CancellationToken ct = default)
     {
+        mountDir = mountDir.TrimEnd('\\', '/');
         var args = new List<string>
         {
             "/English", "/Unmount-Image", $"/MountDir:{mountDir}", commit ? "/Commit" : "/Discard"

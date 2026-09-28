@@ -132,7 +132,7 @@ public sealed partial class StartViewModel : ViewModelBase
             "  • docs\\Architecture.md — technical architecture\n" +
             "  • docs\\Setup.md — build and run instructions\n" +
             "  • docs\\Roadmap.md — phase plan and status\n\n" +
-            $"Version: {AppInfo.Version} (Phase 1 — ISO detection)");
+            $"Version: {AppInfo.Version} — full pipeline: analyze → customize → build → validate");
     }
 
     private void RefreshRecents()
