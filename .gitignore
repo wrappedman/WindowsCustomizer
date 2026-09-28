@@ -1,0 +1,30 @@
+## Build results
+bin/
+obj/
+dist/
+publish/
+*.user
+*.suo
+.vs/
+.idea/
+
+## Test results
+TestResults/
+coverage/
+
+## Local tooling
+.dotnet/
+.nuget/
+
+## OS junk
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+## Project runtime data (never commit live workspaces)
+*.wcp
+!docs/**
+Logs/
+Temp/
+Mount/
+Output/

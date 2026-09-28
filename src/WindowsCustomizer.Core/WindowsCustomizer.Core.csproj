@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>WindowsCustomizer.Core</RootNamespace>
+    <AssemblyName>WindowsCustomizer.Core</AssemblyName>
+    <Description>Cross-platform domain core: project model, ISO analysis, logging, safety utilities.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Pure managed ISO9660/UDF reader: lets us inspect a Windows ISO without mounting it. -->
+    <PackageReference Include="DiscUtils.Iso9660" Version="0.16.13" />
+    <PackageReference Include="DiscUtils.Udf" Version="0.16.13" />
+  </ItemGroup>
+
+</Project>

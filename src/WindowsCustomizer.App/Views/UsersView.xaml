@@ -1,0 +1,121 @@
+<UserControl x:Class="WindowsCustomizer.App.Views.UsersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel MaxWidth="900" HorizontalAlignment="Left">
+        <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitle}" />
+        <TextBlock Text="{Binding Subtitle}" Style="{StaticResource PageSubtitle}" />
+
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="ACCOUNT" Style="{StaticResource SectionLabel}" />
+                <TextBlock Text="Default username" Style="{StaticResource FormLabel}" />
+                <TextBox Text="{Binding U.DefaultUsername, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Style="{StaticResource HintText}" Text="The account created at first boot." />
+
+                <TextBlock Text="Display name" Style="{StaticResource FormLabel}" Margin="0,12,0,5" />
+                <TextBox Text="{Binding U.DisplayName, UpdateSourceTrigger=PropertyChanged}" />
+
+                <TextBlock Text="Password" Style="{StaticResource FormLabel}" Margin="0,12,0,5" />
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Width="320" Text="{Binding U.Password, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Content="Generate" Style="{StaticResource BaseButton}" Margin="8,0,0,0"
+                            ToolTip="Generate a strong password (required for Auto Login)"
+                            Command="{Binding GeneratePasswordCommand}" />
+                </StackPanel>
+                <TextBlock Style="{StaticResource HintText}"
+                           Text="Auto Login requires a password — if you leave this empty and enable Auto Login, a strong password is generated automatically." />
+
+                <CheckBox Content="Auto login (sign in automatically on first boot)" IsChecked="{Binding U.AutoLogin, Mode=TwoWay}" Margin="0,10,0,2" />
+                <CheckBox Content="Add the default user to Administrators" IsChecked="{Binding U.CreateAdministrator, Mode=TwoWay}" Margin="0,2" />
+                <CheckBox Content="Enable the Guest account" IsChecked="{Binding U.EnableGuest, Mode=TwoWay}" Margin="0,2" />
+            </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="COMPUTER &amp; IDENTITY" Style="{StaticResource SectionLabel}" />
+                <TextBlock Text="Computer name" Style="{StaticResource FormLabel}" />
+                <TextBox Text="{Binding U.ComputerName, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="Organization" Style="{StaticResource FormLabel}" Margin="0,12,0,5" />
+                <TextBox Text="{Binding U.Organization, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="Owner" Style="{StaticResource FormLabel}" Margin="0,12,0,5" />
+                <TextBox Text="{Binding U.Owner, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="LANGUAGE, REGION &amp; TIME" Style="{StaticResource SectionLabel}" />
+                <TextBlock Text="Default language" Style="{StaticResource FormLabel}" />
+                <ComboBox IsEditable="True" ItemsSource="{Binding Languages}"
+                          Text="{Binding U.DefaultLanguage, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="Time zone" Style="{StaticResource FormLabel}" Margin="0,12,0,5" />
+                <ComboBox IsEditable="True" ItemsSource="{Binding TimeZones}"
+                          Text="{Binding U.TimeZone, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="Keyboard layouts" Style="{StaticResource FormLabel}" Margin="0,12,0,5" />
+                <StackPanel Orientation="Horizontal">
+                    <ComboBox Width="320" ItemsSource="{Binding LayoutOptions}"
+                              SelectedItem="{Binding LayoutToAdd}"
+                              DisplayMemberPath="Name"
+                              ToolTip="Pick a keyboard layout and click Add. English (US) is the default." />
+                    <Button Content="Add Layout" Style="{StaticResource BaseButton}" Margin="8,0,0,0"
+                            Command="{Binding AddLayoutCommand}" />
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding SelectedLayouts}" Margin="0,8,0,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{DynamicResource Brush.SurfaceAlt}" CornerRadius="6"
+                                    Padding="10,6" Margin="0,0,0,4">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding Code}" FontSize="10"
+                                                   Foreground="{DynamicResource Brush.TextSecondary}" />
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Background="#333B82F6" CornerRadius="4" Padding="6,2"
+                                            Margin="8,0,0,0" VerticalAlignment="Center"
+                                            Visibility="{Binding IsDefault, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="Default" FontSize="10" Foreground="{DynamicResource Brush.Accent}" />
+                                    </Border>
+                                    <Button Grid.Column="2" Content="Make default" Style="{StaticResource BaseButton}"
+                                            Padding="8,3" FontSize="11" Margin="8,0,0,0" VerticalAlignment="Center"
+                                            Visibility="{Binding IsDefault, Converter={StaticResource InverseBoolToVis}}"
+                                            Command="{Binding DataContext.MakeDefaultLayoutCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}" />
+                                    <Button Grid.Column="3" Content="✕" Style="{StaticResource BaseButton}"
+                                            Padding="8,3" FontSize="11" Margin="6,0,0,0" VerticalAlignment="Center"
+                                            Command="{Binding DataContext.RemoveLayoutCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Style="{StaticResource HintText}"
+                           Text="The first layout is the Windows default keyboard. English (US) is always available — add others (e.g. Persian) as needed." />
+                <TextBlock Text="Region" Style="{StaticResource FormLabel}" Margin="0,12,0,5" />
+                <ComboBox IsEditable="True" ItemsSource="{Binding Regions}"
+                          Text="{Binding U.Region, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Style="{StaticResource HintText}"
+                           Text="Pick from the list, or type a custom value if yours is not listed." />
+            </StackPanel>
+        </Border>
+
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12"
+                Visibility="{Binding Warnings, Converter={StaticResource NullToVisibility}}">
+            <StackPanel>
+                <TextBlock Text="⚠ NEEDS ATTENTION" Style="{StaticResource SectionLabel}" Foreground="#C45500" />
+                <TextBlock Text="{Binding Warnings}" TextWrapping="Wrap" Foreground="#8A4B00" />
+            </StackPanel>
+        </Border>
+
+        <Button Content="Save User Settings" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left"
+                Command="{Binding SaveUsersCommand}" />
+    </StackPanel>
+</UserControl>

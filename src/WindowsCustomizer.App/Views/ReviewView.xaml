@@ -1,0 +1,100 @@
+<UserControl x:Class="WindowsCustomizer.App.Views.ReviewView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel MaxWidth="1000" HorizontalAlignment="Left">
+        <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitle}" />
+        <TextBlock Text="{Binding Subtitle}" Style="{StaticResource PageSubtitle}" />
+
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+            <Button Content="Refresh" Style="{StaticResource PrimaryButton}" Command="{Binding RefreshCommand}" />
+            <Button Content="Save + Snapshot" Style="{StaticResource BaseButton}" Margin="10,0,0,0" Command="{Binding SaveReviewCommand}" />
+            <Button Content="Undo Last Change" Style="{StaticResource BaseButton}" Margin="10,0,0,0" Command="{Binding UndoCommand}" />
+        </StackPanel>
+
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="SUMMARY" Style="{StaticResource SectionLabel}" />
+                <TextBlock Text="{Binding ChangeSummary}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding RiskSummary}" Foreground="{DynamicResource Brush.Warning}" Margin="0,4,0,0" />
+            </StackPanel>
+        </Border>
+
+        <!-- Dependency issues -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="DEPENDENCY &amp; SAFETY CHECKS" Style="{StaticResource SectionLabel}" />
+                <TextBlock Text="No issues detected."
+                           Style="{StaticResource HintText}"
+                           Visibility="{Binding Issues.Count, Converter={StaticResource CountToVisibility}, ConverterParameter=Invert}" />
+                <ItemsControl ItemsSource="{Binding Issues}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,3">
+                                <TextBlock TextWrapping="Wrap">
+                                    <Run FontWeight="SemiBold" Text="{Binding Severity, Mode=OneWay}" />
+                                    <Run Text=" — " />
+                                    <Run Text="{Binding Message, Mode=OneWay}" />
+                                </TextBlock>
+                                <TextBlock Style="{StaticResource HintText}" Text="{Binding Resolution}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- Changes -->
+        <Border Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="ALL CHANGES" Style="{StaticResource SectionLabel}" />
+                <ItemsControl ItemsSource="{Binding Changes}" MaxHeight="520">
+                    <ItemsControl.GroupStyle>
+                        <GroupStyle>
+                            <GroupStyle.HeaderTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" Margin="0,10,0,4"
+                                               Foreground="{DynamicResource Brush.Accent}" />
+                                </DataTemplate>
+                            </GroupStyle.HeaderTemplate>
+                        </GroupStyle>
+                    </ItemsControl.GroupStyle>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <CheckBox Grid.Column="0" IsChecked="{Binding IsEnabled, Mode=TwoWay}" Margin="0,0,8,0" />
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding Detail}" Style="{StaticResource HintText}" />
+                                </StackPanel>
+                                <Border Grid.Column="2" CornerRadius="4" Padding="6,1" VerticalAlignment="Top">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#336CCB5F" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Risk}" Value="High">
+                                                    <Setter Property="Background" Value="#33FF6B6B" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Risk}" Value="Critical">
+                                                    <Setter Property="Background" Value="#80FF4444" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Risk}" Value="Medium">
+                                                    <Setter Property="Background" Value="#33FFC83D" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding RiskLabel}" FontSize="10.5" />
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

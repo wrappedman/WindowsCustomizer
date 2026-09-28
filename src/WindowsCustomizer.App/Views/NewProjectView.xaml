@@ -1,0 +1,85 @@
+<UserControl x:Class="WindowsCustomizer.App.Views.NewProjectView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel MaxWidth="820" HorizontalAlignment="Left">
+        <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitle}" />
+        <TextBlock Text="{Binding Subtitle}" Style="{StaticResource PageSubtitle}" />
+
+        <!-- Step 1: name -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="1 · PROJECT NAME" Style="{StaticResource SectionLabel}" />
+                <TextBlock Text="Project name" Style="{StaticResource FormLabel}" />
+                <TextBox Text="{Binding ProjectName, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Style="{StaticResource HintText}"
+                           Text="Used for the project folder and the .wcp file (e.g. MyWindows11). Allowed: letters, digits, spaces, - and _" />
+            </StackPanel>
+        </Border>
+
+        <!-- Step 2: location -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="2 · WORKSPACE LOCATION" Style="{StaticResource SectionLabel}" />
+                <TextBlock Text="Store projects in" Style="{StaticResource FormLabel}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding WorkspaceParent, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="1" Content="Browse..."
+                            Style="{StaticResource BaseButton}"
+                            Margin="8,0,0,0"
+                            Command="{Binding BrowseWorkspaceCommand}" />
+                </Grid>
+                <TextBlock Style="{StaticResource HintText}"
+                           Text="Each project gets its own workspace (Source, Mount, Drivers, Updates, Registry, Scripts, Output, ...). The workspace needs roughly 2-3× the ISO size of free disk space during builds." />
+                <TextBlock Text="{Binding FreeSpaceLine}" Style="{StaticResource HintText}"
+                           Foreground="{DynamicResource Brush.Accent}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Step 3: ISO -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="3 · SOURCE WINDOWS ISO" Style="{StaticResource SectionLabel}" />
+                <TextBlock Text="Windows installation ISO" Style="{StaticResource FormLabel}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding SourceIsoPath, UpdateSourceTrigger=PropertyChanged}" />
+                    <Button Grid.Column="1" Content="Browse..."
+                            Style="{StaticResource BaseButton}"
+                            Margin="8,0,0,0"
+                            Command="{Binding BrowseIsoCommand}" />
+                </Grid>
+                <TextBlock Text="{Binding IsoInfoLine}" Style="{StaticResource HintText}"
+                           Foreground="{DynamicResource Brush.Accent}" />
+                <TextBlock Style="{StaticResource HintText}"
+                           Text="Windows 10 and Windows 11 ISOs (x64 / ARM64) are supported. The file is opened read-only and is never modified." />
+            </StackPanel>
+        </Border>
+
+        <!-- Validation -->
+        <Border Background="#33FF6B6B" CornerRadius="8" Padding="12,8" Margin="0,4,0,12"
+                Visibility="{Binding HasValidationMessage, Converter={StaticResource BoolToVisibility}}">
+            <TextBlock Text="{Binding ValidationMessage}"
+                       Foreground="{DynamicResource Brush.Error}"
+                       TextWrapping="Wrap"
+                       FontSize="12.5" />
+        </Border>
+
+        <!-- Actions -->
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Create Project and Analyze ISO"
+                    Style="{StaticResource PrimaryButton}"
+                    Command="{Binding CreateProjectCommand}" />
+            <Button Content="Cancel"
+                    Style="{StaticResource BaseButton}"
+                    Margin="10,0,0,0"
+                    Command="{Binding CancelCommand}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

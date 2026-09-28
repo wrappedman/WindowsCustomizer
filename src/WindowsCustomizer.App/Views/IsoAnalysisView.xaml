@@ -1,0 +1,146 @@
+<UserControl x:Class="WindowsCustomizer.App.Views.IsoAnalysisView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <StackPanel>
+        <!-- Header -->
+        <TextBlock Text="{Binding Title}" Style="{StaticResource PageTitle}" />
+        <TextBlock Text="{Binding Subtitle}" Style="{StaticResource PageSubtitle}" />
+        <TextBlock Text="{Binding ProjectSummary}" Style="{StaticResource HintText}" Margin="0,-12,0,0" />
+
+        <!-- Actions -->
+        <StackPanel Orientation="Horizontal" Margin="0,16,0,16">
+            <Button Content="Analyze ISO (read-only)"
+                    Style="{StaticResource PrimaryButton}"
+                    Command="{Binding AnalyzeCommand}" />
+            <Button Content="Cancel"
+                    Style="{StaticResource BaseButton}"
+                    Margin="10,0,0,0"
+                    Command="{Binding CancelAnalysisCommand}" />
+            <Button Content="Compute SHA-256"
+                    Style="{StaticResource BaseButton}"
+                    Margin="10,0,0,0"
+                    Command="{Binding ComputeHashCommand}" />
+            <Button Content="Back to Start"
+                    Style="{StaticResource BaseButton}"
+                    Margin="10,0,0,0"
+                    Command="{Binding BackCommand}" />
+        </StackPanel>
+
+        <TextBlock Text="{Binding AnalysisStatus}"
+                   Foreground="{DynamicResource Brush.Accent}"
+                   FontSize="12.5"
+                   Margin="0,0,0,12" />
+
+        <!-- Project / source card -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="SOURCE ISO" Style="{StaticResource SectionLabel}" />
+                <TextBlock Text="{Binding SourceIsoLine}" FontSize="13" Foreground="{DynamicResource Brush.TextPrimary}" />
+                <TextBlock Text="{Binding Sha256}" Style="{StaticResource HintText}"
+                           FontFamily="Consolas" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Elapsed}" Style="{StaticResource HintText}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Summary cards -->
+        <Grid Margin="0,0,0,12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="12" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="VOLUME" Style="{StaticResource SectionLabel}" />
+                    <TextBlock Text="{Binding VolumeLabel}" FontSize="16" FontWeight="SemiBold"
+                               Foreground="{DynamicResource Brush.TextPrimary}" />
+                    <TextBlock Text="{Binding FileSystem}" Style="{StaticResource HintText}" />
+                    <TextBlock Text="{Binding IsoSize}" Style="{StaticResource HintText}" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="0" Grid.Column="2" Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="ARCHITECTURE &amp; BOOT" Style="{StaticResource SectionLabel}" />
+                    <TextBlock Text="{Binding Architectures}" FontSize="16" FontWeight="SemiBold"
+                               Foreground="{DynamicResource Brush.TextPrimary}" />
+                    <TextBlock Text="{Binding BootSummary}" Style="{StaticResource HintText}" TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="INSTALL IMAGE (WIM / ESD)" Style="{StaticResource SectionLabel}" />
+                    <TextBlock Text="{Binding InstallImageSummary}" FontSize="13"
+                               Foreground="{DynamicResource Brush.TextPrimary}" />
+                    <TextBlock Text="{Binding InstallImageHeader}" Style="{StaticResource HintText}" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Boot files -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12">
+            <StackPanel>
+                <TextBlock Text="BOOT FILES" Style="{StaticResource SectionLabel}" />
+                <ItemsControl ItemsSource="{Binding BootFiles}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" Margin="0,2">
+                                <TextBlock Text="&#xE73E;" FontFamily="Segoe MDL2 Assets"
+                                           Foreground="{DynamicResource Brush.Success}" Width="22" />
+                                <TextBlock Text="{Binding Kind}" FontWeight="SemiBold" Width="180"
+                                           Foreground="{DynamicResource Brush.TextPrimary}" />
+                                <TextBlock Text="{Binding Path}" Foreground="{DynamicResource Brush.TextSecondary}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <!-- File structure -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="ISO ROOT STRUCTURE" Style="{StaticResource SectionLabel}" />
+                    <ListView ItemsSource="{Binding RootEntries}" MaxHeight="320"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Name" Width="240" DisplayMemberBinding="{Binding Name}" />
+                                <GridViewColumn Header="Size" Width="90" DisplayMemberBinding="{Binding SizeBytes}" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="SOURCES FOLDER" Style="{StaticResource SectionLabel}" />
+                    <ListView ItemsSource="{Binding SourcesFiles}" MaxHeight="320"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Name" Width="240" DisplayMemberBinding="{Binding Name}" />
+                                <GridViewColumn Header="Size" Width="90" DisplayMemberBinding="{Binding SizeBytes}" />
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </StackPanel>
+</UserControl>
