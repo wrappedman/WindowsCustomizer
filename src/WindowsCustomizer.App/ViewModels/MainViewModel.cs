@@ -128,7 +128,6 @@ public sealed partial class MainViewModel : ViewModelBase, IStatusReporter
         {
             new NavItemViewModel("start", "Start", "\uE80F", "PROJECT", true, ""),
             new NavItemViewModel("source", "Source ISO", "\uE7B8", "PROJECT", true, ""),
-            new NavItemViewModel("edition", "Edition", "\uE895", "PROJECT", true, "")
         }));
 
         Navigation.Add(new NavSectionViewModel("CUSTOMIZE", new[]
@@ -179,9 +178,6 @@ public sealed partial class MainViewModel : ViewModelBase, IStatusReporter
                     break;
                 case "source":
                     ShowIsoAnalysis(CurrentProject!);
-                    break;
-                case "edition":
-                    ShowEdition();
                     break;
                 case "users":
                     ShowUsers();
@@ -276,7 +272,6 @@ public sealed partial class MainViewModel : ViewModelBase, IStatusReporter
         SetSelected("source");
     }
 
-    private void ShowEdition() => ShowPage(new EditionViewModel(CurrentProject!, _dismEngine, _logger, _dialogs, this));
     private void ShowUsers() => ShowPage(new UsersViewModel(CurrentProject!, _logger, _dialogs, this));
     private void ShowApps() => ShowPage(new AppsViewModel(CurrentProject!, _dismEngine, _logger, _dialogs, this));
     private void ShowDrivers() => ShowPage(new DriversViewModel(CurrentProject!, _logger, _dialogs, this));

@@ -5,11 +5,6 @@ namespace WindowsCustomizer.App.Views;
 // Combined code-behind for the customization/build pages. Each XAML file declares its x:Class;
 // the generated partial provides InitializeComponent.
 
-public partial class EditionView : UserControl
-{
-    public EditionView() => InitializeComponent();
-}
-
 public partial class UsersView : UserControl
 {
     public UsersView() => InitializeComponent();

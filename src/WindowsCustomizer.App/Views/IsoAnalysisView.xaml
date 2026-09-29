@@ -84,6 +84,20 @@
             </Border>
         </Grid>
 
+        <!-- Edition picker (the build applies the selected image index) -->
+        <Border Style="{StaticResource Card}" Margin="0,0,0,12"
+                Visibility="{Binding EditionOptions.Count, Converter={StaticResource CountToVisibility}}">
+            <StackPanel>
+                <TextBlock Text="WINDOWS EDITION TO INSTALL" Style="{StaticResource SectionLabel}" />
+                <ComboBox ItemsSource="{Binding EditionOptions}"
+                          SelectedItem="{Binding SelectedEdition, Mode=TwoWay}"
+                          DisplayMemberPath="Name"
+                          MaxWidth="420" HorizontalAlignment="Left" Margin="0,6,0,0" />
+                <TextBlock Style="{StaticResource HintText}" Margin="0,6,0,0"
+                           Text="The edition selected here is applied to the customized image during the build. It is read directly from the ISO (no extraction)." />
+            </StackPanel>
+        </Border>
+
         <!-- Boot files -->
         <Border Style="{StaticResource Card}" Margin="0,0,0,12">
             <StackPanel>

@@ -241,7 +241,8 @@ public sealed class IsoAnalyzer : IIsoAnalyzer
             result.InstallImagePath = path;
             result.InstallImageSize = Safe(() => fs.GetFileInfo(path).Length, 0L);
             result.InstallImageHeader = TryReadWimHeader(fs, path);
-            result.EditionNames = TryReadEditionNames(fs, path);
+            result.Editions = TryReadEditions(fs, path);
+            result.EditionNames = result.Editions.Select(e => e.Name).ToList();
             _log.Info("IsoAnalyzer",
                 $"Install payload: {path} ({format}, {FormatBytes(result.InstallImageSize)}, " +
                 $"{(result.InstallImageHeader is null ? "header unreadable" : $"{result.InstallImageHeader.ImageCount} image(s), {result.InstallImageHeader.Compression}")}).");
@@ -292,19 +293,22 @@ public sealed class IsoAnalyzer : IIsoAnalyzer
         }
     }
 
-    /// <summary>Reads edition names straight from the WIM XML manifest (no extraction needed).</summary>
-    private List<string> TryReadEditionNames(DiscUtils.DiscFileSystem fs, string path)
+    /// <summary>Reads edition entries straight from the WIM XML manifest (no extraction needed).</summary>
+    private List<EditionOption> TryReadEditions(DiscUtils.DiscFileSystem fs, string path)
     {
         try
         {
             using var s = fs.OpenFile(path, FileMode.Open, FileAccess.Read);
             var images = WimXmlReader.TryReadImages(s);
-            return images?.Select(i => i.Name).Where(n => !string.IsNullOrWhiteSpace(n)).ToList() ?? new List<string>();
+            return images?
+                .Select(i => new EditionOption(i.Index, i.Name, i.EditionId))
+                .Where(e => !string.IsNullOrWhiteSpace(e.Name))
+                .ToList() ?? new List<EditionOption>();
         }
         catch (Exception ex)
         {
             _log.Warn("IsoAnalyzer", $"Edition manifest unreadable for {path}: {ex.Message}");
-            return new List<string>();
+            return new List<EditionOption>();
         }
     }
 

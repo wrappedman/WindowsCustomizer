@@ -71,6 +71,25 @@ public sealed partial class IsoAnalysisViewModel : ViewModelBase
     [ObservableProperty]
     private string _elapsed = string.Empty;
 
+    /// <summary>Editions inside the install image (read instantly from the WIM XML manifest).</summary>
+    public ObservableCollection<EditionOption> EditionOptions { get; } = new();
+
+    [ObservableProperty]
+    private EditionOption? _selectedEdition;
+
+    /// <summary>The selected edition is what the build pipeline applies (image index).</summary>
+    partial void OnSelectedEditionChanged(EditionOption? value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        _project.Customization.SelectedImageIndexes = new List<int> { value.Index };
+        _logger.Info("IsoAnalysis", $"Edition selected for the build: #{value.Index} {value.Name}");
+        _status.SetStatus($"Edition to install: {value.Name} (index {value.Index}).");
+    }
+
     public IsoAnalysisViewModel(
         ProjectModel project,
         IIsoAnalyzer analyzer,
@@ -295,6 +314,16 @@ public sealed partial class IsoAnalysisViewModel : ViewModelBase
         {
             SourcesFiles.Add(e);
         }
+
+        // Edition picker (build applies the selected image index).
+        EditionOptions.Clear();
+        foreach (var e in result.Editions)
+        {
+            EditionOptions.Add(e);
+        }
+
+        var wanted = _project.Customization.SelectedImageIndexes.FirstOrDefault();
+        SelectedEdition = EditionOptions.FirstOrDefault(e => e.Index == wanted) ?? EditionOptions.FirstOrDefault();
 
         BootFiles.Clear();
         foreach (var b in result.BootFiles)

@@ -67,6 +67,9 @@ public sealed class BootFileInfo
     public BootFileKind Kind { get; set; }
 }
 
+/// <summary>A Windows edition (install image) selectable for the build.</summary>
+public sealed record EditionOption(int Index, string Name, string EditionId);
+
 /// <summary>Result of a read-only inspection of a Windows installation ISO.</summary>
 public sealed class IsoAnalysisResult
 {
@@ -109,6 +112,9 @@ public sealed class IsoAnalysisResult
 
     /// <summary>Edition names read from the WIM XML manifest (empty when unreadable).</summary>
     public List<string> EditionNames { get; set; } = new();
+
+    /// <summary>Full edition entries (index + name) for the build-time edition picker.</summary>
+    public List<EditionOption> Editions { get; set; } = new();
 
     public List<string> Warnings { get; } = new();
 

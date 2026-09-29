@@ -93,7 +93,9 @@ public sealed class BuildPipeline
         };
 
         var ws = project.WorkspacePath;
-        var mountDir = Path.Combine(ws, "Mount", "image");
+        // DISM /Mount-Image needs reparse points: the mount point MUST live on NTFS.
+        // (e.g. an exFAT project drive fails with 0xc142011f — so we relocate automatically.)
+        var mountDir = ResolveNtfsMountDir(Path.Combine(ws, "Mount", "image"), report);
         var imagesDir = Path.Combine(ws, "Images");
         var tempDir = Path.Combine(ws, "Temp", "iso-content");
         var outputDir = Path.Combine(ws, "Output");
@@ -604,6 +606,54 @@ public sealed class BuildPipeline
     }
 
     // ------------------------------------------------------- helpers -------------------------------------------------------
+
+    /// <summary>
+    /// Returns a mount directory that is guaranteed to sit on an NTFS volume.
+    /// DISM /Mount-Image creates reparse points and fails with 0xc142011f on FAT/exFAT/ReFS.
+    /// When the project drive is not NTFS the mount point is relocated to the user's
+    /// local application data (C: is virtually always NTFS) with a clear report note.
+    /// </summary>
+    private string ResolveNtfsMountDir(string preferred, BuildReport report)
+    {
+        if (IsNtfs(preferred, out var preferredFormat, out var preferredRoot))
+        {
+            return preferred;
+        }
+
+        var fallback = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "WindowsCustomizer", "Mount", "image");
+
+        if (!IsNtfs(fallback, out var fallbackFormat, out var fallbackRoot))
+        {
+            throw new InvalidOperationException(
+                $"DISM /Mount-Image requires an NTFS volume (reparse points). " +
+                $"{preferredRoot} is {preferredFormat} and {fallbackRoot} is {fallbackFormat}. " +
+                "Move the project workspace to an NTFS drive and run the build again.");
+        }
+
+        report.Warnings.Add(
+            $"The project drive {preferredRoot} uses {preferredFormat}, which does not support the reparse points DISM needs for mounting. " +
+            $"The image is mounted at {fallback} (NTFS) instead — all other build data stays in the project workspace.");
+        _log.Warn("Build", $"Mount point relocated from '{preferred}' ({preferredFormat}) to '{fallback}' (NTFS).");
+        return fallback;
+    }
+
+    private static bool IsNtfs(string path, out string format, out string root)
+    {
+        format = "unknown";
+        root = path;
+        try
+        {
+            root = Path.GetPathRoot(Path.GetFullPath(path)) ?? path;
+            format = new DriveInfo(root).DriveFormat;
+            return format.Equals("NTFS", StringComparison.OrdinalIgnoreCase);
+        }
+        catch
+        {
+            return false;
+        }
+    }
 
     private async Task<string> LocateInstallImageAsync(ProjectModel project, string cacheDir)
     {
